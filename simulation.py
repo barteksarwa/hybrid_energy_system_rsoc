@@ -91,7 +91,7 @@ def f(n_pv, n_bat, n_soec_cells, n_sofc_cells, n_tank):
             # if net_power[i] > 100:
             j0 = 1000 # punkt przed p_max
             consh2[i] = np.minimum(sofc_dev.hydrogen_consumption_rate(
-                sofc_dev.newton_method(sofc_dev.w_sofc_diff, 1100, j0, 115000, p_fc))
+                sofc_dev.newton_method(sofc_dev.w_sofc_diff, 1100, j0, 115000, p_fc, 100))
                 * 22.4 * 3600, soch2[i] * capacityh2) 
             dsoc = 0 / ub
             dsoch2 = -consh2[i] / capacityh2
@@ -107,7 +107,7 @@ def f(n_pv, n_bat, n_soec_cells, n_sofc_cells, n_tank):
             j0 = 1000 # punkt przed p_max 
             dsoc = - discharge_capacity / ub
             consh2[i] = np.minimum(sofc_dev.hydrogen_consumption_rate(
-                sofc_dev.newton_method(sofc_dev.w_sofc_diff, 1100, j0, 115000, p_fc))
+                sofc_dev.newton_method(sofc_dev.w_sofc_diff, 1100, j0, 115000, p_fc, 100))
                 * 22.4 * 3600, soch2[i] * capacityh2)
             dsoch2 = -consh2[i] / capacityh2
             deficit_energy[i] = 0
@@ -159,13 +159,12 @@ def f(n_pv, n_bat, n_soec_cells, n_sofc_cells, n_tank):
                                      np.array(loss_energy[1:])))
 
     return time_csv, result
-
-        # output = 'test_plots_csv'
-        # os.makedirs(output, exist_ok=True)
+output = 'test_plots_csv'
+os.makedirs(output, exist_ok=True)
         
-        # text_csv_filename = os.path.join(output, 'test.csv')
-        # time_csv, result = f(8,3,1,3,3)
-        # np.savetxt(text_csv_filename, result)
+text_csv_filename = os.path.join(output, 'test.csv')
+time_csv, result = f(8,3,1,3,3)
+np.savetxt(text_csv_filename, result)
 
 # output_directory = 'doe_output_csv'
 # os.makedirs(output_directory, exist_ok=True)
