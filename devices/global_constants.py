@@ -47,8 +47,8 @@ r_pore = 0.25e-6  # m
 # r_pore from AlZahrani https://sci-hub.se/10.1016/j.ijhydene.2017.03.186
 
 # Solid Oxide Electrolyzer
-a_cell = 0.05  # m^2 #wpisane tak o
-n_cells = 8
+a_cell = 0.16  # m^2 #wpisane tak o
+n_cells = 1
 
 # Solid Oxide Fuel Cell parameters
 # properties of sofc components:
@@ -56,16 +56,16 @@ n_cells = 8
 # ro_i_exp - material resisticity exp coeff,
 # delta_i - corresponding thickness(cm)
 # where i = a, c, e for anode cathode and electrolyte
-j_0fc = 3000  # A/m^2 exchange current density
-j_lfc = 9000  # A/m^2 limiting current density
-ro_i_const = [0.00298, 0.008114, 0.00294]
-ro_i_exp = [-1392, 600, 10350]
-delta_i = [0.5, 0.05, 0.01] # mm
+# j_0fc = 3000  # A/m^2 exchange current density
+# j_lfc = 9000  # A/m^2 limiting current density
+# ro_i_const = [0.00298, 0.008114, 0.00294]
+# ro_i_exp = [-1392, 600, 10350]
+# delta_i = [0.5, 0.05, 0.01] # mm
 # delta_a = 0.015
 # delta_c = 0.2
 # delta_e = 0.004
-n_cells_fc = 25
-a_cell_fc = 0.05  # m^2 wpisane zeby dopasowac stos
+# n_cells_fc = 25
+# a_cell_fc = 0.05  # m^2 wpisane zeby dopasowac stos
 
 # Photovoltaic panel parameteres from the datasheet
 
@@ -95,18 +95,14 @@ parameters = {
 qb = 3840.0  # Power rating of the BESS [W]
 bd = 0.95  # Discharge efficiency [-]
 bc = 0.95  # Charge efficiency [-]
-ub = 3840.0  # BESS energy rating [Wh]
-g = 0.8  # BESS state of charge at the start of duration [-]
-g_min = 0.2  # Minimum allowable state of charge [-]
-g_max = 0.8  # Maximum allowable state of charge [-]
-d = 1.0  # Duration in hours
+ub = qb  # BESS energy rating [Wh]
 
 # Capacity of hydrogen storage tank [dm3]
 capacityh2 = 7000
 
 # Energy storage system limitations / parameters
-SOC_min = 0.2
-SOC_max = 0.8
+SOC_min = 0.2 # Minimum allowable state of charge [-]
+SOC_max = 0.8 # Maximum allowable state of charge [-]
 SOCH2_max = capacityh2
 SOCH2_min = 0
 

@@ -52,7 +52,11 @@ class SolidOxideElectrolyser:
     @staticmethod
     def knudsen_o2(t):
         return 4 / 3 * r_pore * np.sqrt(8 * R * t / np.pi * m_o2)
-
+    
+    @staticmethod
+    def knudsen_h2(t):
+        return 4 / 3 * r_pore * np.sqrt(8 * R * t / np.pi * m_h2)
+    
     def eff_diff_steam(self, t, p):
         return electrode_porosity / electrode_tortuosity / \
             (1 / self.knudsen_h2o(t) + 1 / 
@@ -62,17 +66,22 @@ class SolidOxideElectrolyser:
         return electrode_porosity / electrode_tortuosity / \
             (1 / self.knudsen_o2(t) + 1 / self.binary_diffusion_coefficient_cath(t, p)) # poprawic
 
-    def v_concc(self, t, j, p):
+    def eff_diff_hydrogen(self, t, p):
+        return electrode_porosity / electrode_tortuosity / \
+            (1 / self.knudsen_h2(t) + 1 / self.binary_diffusion_coefficient_cath(t, p)) # poprawic
+
+    def v_conca(self, t, j, p):
         p_h2o = self.partial_pressure(p, x_h2o)
         p_h2 = self.partial_pressure(p, x_h2)   
         return R * t / n_e / F * np.log\
-            ((1 + j * R * t * sigma_c / 2 / F / self.eff_diff_steam(t, p) / p_h2)/
-            (1 - j * R * t * sigma_c / 2 / F / self.eff_diff_steam(t, p) / p_h2o))
+            ((1 + j * R * t * sigma_a / 2 / F / self.eff_diff_steam(t, p) / p_h2)/
+            (1 - j * R * t * sigma_a / 2 / F / self.eff_diff_steam(t, p) / p_h2o))
 
-    def v_conca(self, t, j, p):
-        p_o2 = self.partial_pressure(p, x_o2)
-        return R * t / n_e / F * np.log((1 + j * R * t * sigma_a /
-                2 / F / self.eff_diff_oxygen(t, p) / p_o2)**.5)
+    # def v_concc(self, t, j, p):
+    #     # p_o2 = self.partial_pressure(p, x_o2)
+    #     # return R * t / n_e / F * np.log((1 + j * R * t * sigma_c /
+    #     #         2 / F / self.eff_diff_oxygen(t, p) / p_o2)**.5)
+    #     return 0
 
     def first_principle_model(self, t, j, p):
         j0a = self.j_0a(t)
@@ -82,7 +91,7 @@ class SolidOxideElectrolyser:
         p_h2o = self.partial_pressure(p, x_h2o)
         v_n = self.equilibrium_voltage(t, p)
         v_c = v_n + self.v_acta(t, j) + self.v_actc(t, j) + self.v_ohm(t, j) +\
-            self.v_conca(t, j, p) + self.v_concc(t, j, p)
+             self.v_conca(t, j, p) #+ self.v_concc(t, j, p)
         return v_c
 
     # def collision_integral(t):

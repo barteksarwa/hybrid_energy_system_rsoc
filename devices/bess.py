@@ -5,14 +5,14 @@ class Battery:
     def __init__(self):
         pass
 
-    def bess_discharge_capacity(self, qb_in, bd_in, ub_in, g_in, g_min_in, d_in):
-        pb = qb_in * bd_in
-        discharge_capacity = min(pb * d_in, ub_in * (g_in - g_min_in))
+    def bess_discharge_capacity(self, qb, bd, ub, g, g_min, t):
+        pb = qb * bd
+        discharge_capacity = min(pb * t, ub * (g - g_min))
         return discharge_capacity
 
-    def bess_charge_capacity(self, qb_out, bc_out, ub_out, g_out, g_mean_out, d_out):
-        pb_out = -qb_out * bc_out
-        charge_capacity = max(pb_out * d_out, -ub_out * (g_mean_out - g_out))
+    def bess_charge_capacity(self, qb, bc, ub, g, g_max, t):
+        pb = -qb * bc
+        charge_capacity = max(pb * t, -ub * (g_max - g))
         return charge_capacity
 
 
