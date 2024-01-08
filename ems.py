@@ -12,16 +12,16 @@ def ems(p_l, p_pv, SOC, p_bess, hydrogen_SOC, previous_s):
     s = previous_s   
     net = p_l + p_pv 
     if net >= 0:
-        if SOC < SOC_max and p_bess > net and (SOC_max-SOC)*ub<=net:
+        if SOC < SOC_max and p_bess > net :
             s = 1 # BESS charges
         elif math.isclose(SOC, SOC_max, abs_tol=1e-6) and hydrogen_SOC < 1.0:
             s = 2
         elif math.isclose(SOC, SOC_max, abs_tol=1e-6) and math.isclose(hydrogen_SOC, 1.0, abs_tol=1e-6):
             s = 7
-        elif SOC < SOC_max and p_bess < net and hydrogen_SOC < 1.0 and (SOC_max-SOC)*ub<=net:
+        elif SOC < SOC_max and p_bess < net and hydrogen_SOC < 1.0 :
             s = 8
-        elif SOC < SOC_max and p_bess < net and hydrogen_SOC < 1.0 and (SOC_max-SOC)*ub<=net:
-            s = 8
+        elif SOC < SOC_max and p_bess < net and math.isclose(hydrogen_SOC, 1.0, abs_tol=1e-6) :
+            s = 1
     else:
         if SOC > SOC_min and p_bess >= abs(net) and (SOC-SOC_min)*ub>=net:
             s = 3
