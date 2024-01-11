@@ -3,6 +3,7 @@ R = 8.314  # Universal gas constant [J/mol K]
 F = 9.64853321233e4  # Faraday constant [C/mol]
 avogadro_number = 6.022e23  # mol-1
 coulomb = 6.241509e18
+t = 1173 # Kelvin
 
 # Thermodynamics properties of H2, H2O, O2
 hydrogen_specific_entropy_820 = 18.19  # J/(g·K)
@@ -18,9 +19,9 @@ g_a = 2.051e9  # A/m2 preexponential factor for anode
 g_c = 1.344e10  # A/m2 preexponential factor for cathode
 e_actc = 1e5  # J/mol
 e_acta = 1.2e5  # J/mol
-sigma_a = 17.5e-6  # no unit
-sigma_c = 312.5e-6
-sigma_e = 12.5e-6
+sigma_a = 5e-5  # m
+sigma_c = 5e-5 # m 
+sigma_e = 20e-5 # m
 a_a = 2.98e-5  # no unit
 a_c = 8.11e-5  # no unit
 a_e = 2.94e-5  # no unit
@@ -29,14 +30,16 @@ b_c = 600  # no unit
 b_e = 10350  # no unit
 electrode_porosity = 0.48  # no unit
 electrode_tortuosity = 5.4  # no unit
-m_h2 = 2  # molar mass of h2
-m_h2o = 18  # molar mass of h2o
-m_o2 = 32  # molar mass of o2
-m_n2 = 28  # molar mass of n2
+m_h2 = 0.002  # molar mass of h2
+m_h2o = 0.018  # molar mass of h2o
+m_o2 = 0.032  # molar mass of o2
+m_n2 = 0.028  # molar mass of n2
 m_h2o_h2 = 2/(1/m_h2+1/m_h2o)
 m_n2_o2 = 2/(1/m_n2+1/m_o2)
-x_h2 = 0.1  # % (molar fraction of Hydrogen inlet of electrolyser)
-x_h2o = 0.9  # % (molar fraction of Water inlet of electrolyser)
+x_h2 = 0.95  # % (molar fraction of Hydrogen inlet of fc)
+x_h2o = 1-x_h2  # % (molar fraction of Water inlet of fc)
+x_h2_ec = 0.05  # % (molar fraction of Hydrogen inlet of electrolyser)
+x_h2o_ec = 1-x_h2_ec  # % (molar fraction of Water inlet of electrolyser)
 x_o2 = 0.21  # % (molar fraction of oxygen inlet of electrolyser)
 x_n2 = 0.79  # % (molar fraction of nitrogen inlet of electrolyser)
 sigma_f_h2 = 6.12  # no unit
@@ -46,8 +49,8 @@ sigma_f_o2 = 16.3  # no unit
 r_pore = 0.25e-6  # m
 # r_pore from AlZahrani https://sci-hub.se/10.1016/j.ijhydene.2017.03.186
 
-# Solid Oxide Electrolyzer
-a_cell = 0.16  # m^2 #wpisane tak o
+# RSOFC
+a_cell = 0.01  # m^2
 n_cells = 1
 
 # Solid Oxide Fuel Cell parameters

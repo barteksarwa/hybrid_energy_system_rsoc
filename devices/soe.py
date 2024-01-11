@@ -1,5 +1,6 @@
 import numpy as np
 from .global_constants import *
+import matplotlib.pyplot as plt
 
 class SolidOxideElectrolyser:
     def __init__(self):
@@ -11,10 +12,10 @@ class SolidOxideElectrolyser:
 
     def equilibrium_voltage(self, t, p):
         # v_0n = (-(water_enthalpy_820 - t*water_specific_entropy_820)+(hydrogen_enthalpy_820 - t*hydrogen_specific_entropy_820)+0.5*(oxygen_enthalpy_820-t*oxygen_specific_entropy_820))/n_e/F
-        v_0n = 1.253 - 2.4516 * t * 0.0001
-        p_h2 = self.partial_pressure(p, x_h2)
-        p_o2 = self.partial_pressure(p, x_o2)
-        p_h2o = self.partial_pressure(p, x_h2o)
+        v_0n = -0.0002809002*t + 1.2770578798
+        p_h2 = self.partial_pressure(p, x_h2_ec)*1e-5
+        p_o2 = self.partial_pressure(p, x_o2)*1e-5
+        p_h2o = self.partial_pressure(p, x_h2o_ec)*1e-5
         return v_0n + R * t / n_e / F * np.log(p_h2 * p_o2 / p_h2o)
 
     @staticmethod
@@ -38,20 +39,26 @@ class SolidOxideElectrolyser:
 
     @staticmethod
     def binary_diffusion_coefficient_anode(t, p):
-        return 0.00143 * t**1.75 / (p * np.sqrt(m_h2o_h2) * \
+        p_fuller = p*1e-5 #bar
+        m_h2o_h2_fuller = m_h2o_h2*1000 #g/mol
+        D_fuller = 0.00143 * t**1.75 / (p_fuller * np.sqrt(m_h2o_h2) * \
                                 ((sigma_f_h2o)**1/3 + (sigma_f_h2)**1/3)**2)
+        return D_fuller*1e-4
 
     def binary_diffusion_coefficient_cath(self, t, p):
-        return 0.00143 * t**1.75 / (p * np.sqrt(m_n2_o2) *
+        p_fuller = p*1e-5 #bar
+        m_n2_o2_fuller = m_n2_o2*1000 #g/mol
+        D_fuller = 0.00143 * t**1.75 / (p_fuller * np.sqrt(m_n2_o2) *
                                 ((sigma_f_o2)**1/3 + (sigma_f_n2)**1/3)**2)
+        return D_fuller * 1e-4 #m2/s
 
     @staticmethod
     def knudsen_h2o(t):
-        return 4 / 3 * r_pore * np.sqrt(8 * R * t / np.pi * m_h2o)
+        return 4 / 3 * r_pore * np.sqrt(8 * R * t / np.pi / m_h2o)
 
     @staticmethod
     def knudsen_o2(t):
-        return 4 / 3 * r_pore * np.sqrt(8 * R * t / np.pi * m_o2)
+        return 4 / 3 * r_pore * np.sqrt(8 * R * t / np.pi / m_o2) 
     
     @staticmethod
     def knudsen_h2(t):
@@ -71,8 +78,8 @@ class SolidOxideElectrolyser:
             (1 / self.knudsen_h2(t) + 1 / self.binary_diffusion_coefficient_cath(t, p)) # poprawic
 
     def v_conca(self, t, j, p):
-        p_h2o = self.partial_pressure(p, x_h2o)
-        p_h2 = self.partial_pressure(p, x_h2)   
+        p_h2o = self.partial_pressure(p, x_h2o_ec)
+        p_h2 = self.partial_pressure(p, x_h2_ec)   
         return R * t / n_e / F * np.log\
             ((1 + j * R * t * sigma_a / 2 / F / self.eff_diff_steam(t, p) / p_h2)/
             (1 - j * R * t * sigma_a / 2 / F / self.eff_diff_steam(t, p) / p_h2o))
@@ -86,9 +93,9 @@ class SolidOxideElectrolyser:
     def first_principle_model(self, t, j, p):
         j0a = self.j_0a(t)
         j0c = self.j_0c(t)
-        p_h2 = self.partial_pressure(p, x_h2)
+        p_h2 = self.partial_pressure(p, x_h2_ec)
         p_o2 = self.partial_pressure(p, x_o2)
-        p_h2o = self.partial_pressure(p, x_h2o)
+        p_h2o = self.partial_pressure(p, x_h2o_ec)
         v_n = self.equilibrium_voltage(t, p)
         v_c = v_n + self.v_acta(t, j) + self.v_actc(t, j) + self.v_ohm(t, j) +\
              self.v_conca(t, j, p) #+ self.v_concc(t, j, p)
@@ -98,8 +105,8 @@ class SolidOxideElectrolyser:
     #     t_ih2 = t/t_refh2
 
     @staticmethod
-    def p_soec(v_c, j, w_sc):
-        return v_c * j * a_cell * n_cells + w_sc
+    def p_soec(v_c, j):
+        return v_c * j * a_cell * n_cells 
 
     @staticmethod
     def w_sc(s):
@@ -108,12 +115,12 @@ class SolidOxideElectrolyser:
         else:
             return 0
 
-    def w_soec(self, t, j, p, w_sc):
+    def w_soec(self, t, j, p):
         return self.first_principle_model(t, j, p) \
-            * j * a_cell * n_cells + w_sc
+            * j * a_cell * n_cells 
 
-    def w_soec_diff(self, t, j, p, w_sc, w_0):
-        return w_0 - self.w_soec(t, j, p, w_sc)
+    def w_soec_diff(self, t, j, p, w_0):
+        return w_0 - self.w_soec(t, j, p)
 
     def s_gen(self, t, j):
         v_conc = self.v_conca(t, j, p) + self.v_concc(t, j, p)
@@ -127,22 +134,64 @@ class SolidOxideElectrolyser:
         return self.q_soec(t, s_gen, s_in, s_out) * (1 - t_0 / t)
 
     @staticmethod
-    def central_difference_quotient(f, t, j, p, w_sc, w_0, h=1e-6):
-        return (f(t, j + h, p, w_sc ,w_0) \
-                - f(t, j - h, p, w_sc, w_0)) / (2 * h)
+    def central_difference_quotient(f, t, j, p, w_0, h=1e-6):
+        return (f(t, j + h, p, w_0) \
+                - f(t, j - h, p, w_0)) / (2 * h)
 
-    def newton_method(self, f, t, j, p, w_sc, w_0, epsilon=1e-6, max_iter=1000):
+    def newton_method(self, f, t, j, p, w_0, epsilon=1e-6, max_iter=20):
         for i in range(max_iter):
-            wj = f(t, j, p, w_sc, w_0)
+            wj = f(t, j, p, w_0)
+            #print(wj)
             if abs(wj) < epsilon:
                 return j
-            dwj = self.central_difference_quotient(f, t, j, p, w_sc, w_0)
-            if dwj == 0:
-                break
+            dwj = self.central_difference_quotient(f, t, j, p, w_0)
+            #print(dwj)
+            if abs(dwj) < 1e-6:
+                return j
             j = j - wj / dwj
+            print(j)
+            #input()
+            if j < 0:
+                j = 0
         return j
 
     @staticmethod
     def hydrogen_production_rate(j):
         i = j * a_cell * n_cells
         return i * coulomb / avogadro_number / 2
+    
+    def plot_el_characteristic(self):
+        i0 = np.linspace(0, 100000, 10000)
+        v = []
+        p = []
+        for i in i0:
+            v.append(self.first_principle_model(1173, i, 115000))
+
+        for i, k in zip(i0, v):
+            p.append(i * k)
+
+        max_p = np.nanmax(p)
+        index_max_j = np.nanargmax(p)
+        max_j = i0[index_max_j]
+        print(f'Maximum power of fuel cell {max_p}')
+        max_index = np.nanargmax(p)
+
+        plt.plot(i0, p, '-b', markersize=5)
+        # plt.plot(i[max_index], max_p, 'bo', markersize=8)
+        plt.xlabel("j (mA/cm2)")
+        plt.ylabel("p (mW/cm2)")
+        plt.title('Electrolyzer characteristic')
+        plt.show()
+        return max_p, max_j
+if __name__== "__main__":   
+    i = 11720 #
+    t = 1173 #Kelvin
+    p = 115000 #Pa
+    soec_dev = SolidOxideElectrolyser()
+    print(f'Nernst voltage of SOEC {soec_dev.equilibrium_voltage(t, p)}')
+    print(f'Activation losses SOEC anode {soec_dev.v_acta(t, i)}')
+    print(f'Activation losses SOEC cathode {soec_dev.v_actc(t, i)}')
+    print(f'Concentration losses SOEC anode {soec_dev.v_conca(t, i, p)}')
+    print(f'Ohmic losses SOEC {soec_dev.v_ohm(t, i)}')
+    print(f'SOEC voltage {soec_dev.first_principle_model(t, i, p)}')
+    soec_dev.plot_el_characteristic()

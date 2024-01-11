@@ -15,6 +15,11 @@ class Battery:
         charge_capacity = max(pb * t, -ub * (g_max - g))
         return charge_capacity
 
+# qb - power rating
+# bd, bc battery charge discharge efficiency
+# ub - energy rating
+# g - SOC
+# t - czas 
 
 # Test
 # discharge_capacity = bess_discharge_capacity(qb, bd, ub, g, g_min, d)
