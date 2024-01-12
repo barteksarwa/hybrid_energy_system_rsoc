@@ -5,22 +5,25 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment
 
 # Input directory for CSV files
-csv_directory = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\doe_output_csv'
+csv_directory = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\doe_output_csv_update_fff_11'
 
 # Output CSV file path for sums
-output_sums_csv_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\sums_output.csv'
+output_sums_csv_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\sums_output_update_11.csv'
 
 # Output Excel file path for sums
-output_sums_excel_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\sums_output.xlsx'
+output_sums_excel_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\sums_output_update_11.xlsx'
 
 # Path to the 'denormalized_designs' file
-designs_file_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\denormalized_designs.xlsx'
+designs_denormalized_file_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\denormalized_designs_fff.xlsx'
 
 # Path to the 'designs' file
-designs_file_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\designs.xlsx'
+designs_file_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\designs_fff.xlsx'
+
+# Optimization file 'designs_with_losses' path
+optimization_file_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\designs_with_losses_fff.xlsx'
 
 # List all CSV files in the input directory with the name pattern 'pv_plot'
-csv_files = [f for f in os.listdir(csv_directory) if f.startswith('pv_plot') and f.endswith('.csv')]
+csv_files = sorted([f for f in os.listdir(csv_directory) if f.startswith('pv_plot') and f.endswith('.csv')])
 
 # Check if there are any CSV files in the specified directory
 if not csv_files:
@@ -65,18 +68,19 @@ else:
 
     # Load the 'designs' file with the correct encoding
     designs_df = pd.read_excel(designs_file_path)
+    
 
     # Add sums of the last two columns to the 'designs' file separately
-    designs_df['Energy loss (kWh)'] = sums_df.iloc[:, -1] / 1000
-    designs_df['Energy deficit (kWh)'] = sums_df.iloc[:, -2] / 1000
+    designs_df['Energy deficit (kWh)'] = sums_df.iloc[:, -3] / 1000
+    designs_df['Energy loss (kWh)'] = sums_df.iloc[:, -2] / 1000
 
-    costs = [660, 2000, 30000, 30000, 5000]
     
-    designs_df['Sum_Products_Cost'] = np.sum(designs_df.iloc[:, :5].values * costs, axis=1)
+    denom_designs_df = pd.read_excel(designs_denormalized_file_path)
+    costs = [660, 2000, 1200, 5000]
+    
+    designs_df['Sum_Products_Cost'] = np.sum(denom_designs_df.iloc[:, :4].values * costs, axis=1)
 
-    # Add the first 5 columns of the 'designs' file to the 'designs_modified' file
-    designs_modified_df = pd.read_excel('C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\designs_modified.xlsx')
-    designs_modified_df = pd.concat([designs_modified_df, designs_df.iloc[:, :5]], axis=1)
+    # Save the modified DataFrame into a new Excel file
+    designs_df.to_excel(optimization_file_path, index=False)
 
-    # Save the modified 'designs' DataFrame to a new Excel file
-    designs_modified_df.to_excel('C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\designs_modified.xlsx', index=False)
+    print(f'DataFrame with losses saved to {optimization_file_path}')

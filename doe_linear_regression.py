@@ -5,16 +5,16 @@ import matplotlib.pyplot as plt
 
 # Assuming designs_modified_df is your DataFrame with features and targets
 # Path to the 'designs_modified' file
-designs_modified_file_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\designs_modified.xlsx'
+designs_modified_file_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\designs_with_losses.xlsx'
 
 # Load the 'designs_modified' file
 designs_modified_df = pd.read_excel(designs_modified_file_path)
 
 # Use the correct column indices (0-based)
-features = designs_modified_df.iloc[:, [8, 9, 10, 11, 12]]  
-target_loss = designs_modified_df.iloc[:, 5]  
-target_deficit = designs_modified_df.iloc[:, 6]
-target_cost = designs_modified_df.iloc[:, 7]
+features = designs_modified_df.iloc[:, [0,1,2,3]]  
+target_loss = designs_modified_df.iloc[:, 4]  
+target_deficit = designs_modified_df.iloc[:, 5]
+target_cost = designs_modified_df.iloc[:, 6]
 
 # Train the linear regression models
 model_loss = LinearRegression()

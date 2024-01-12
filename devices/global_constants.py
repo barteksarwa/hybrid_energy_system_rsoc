@@ -51,7 +51,6 @@ r_pore = 0.25e-6  # m
 
 # RSOFC
 a_cell = 0.01  # m^2
-n_cells = 1
 
 # Solid Oxide Fuel Cell parameters
 # properties of sofc components:
@@ -95,18 +94,14 @@ parameters = {
 }
 
 # Li-ion battery parameters
-qb = 3840.0  # Power rating of the BESS [W]
+
 bd = 0.95  # Discharge efficiency [-]
 bc = 0.95  # Charge efficiency [-]
-ub = qb  # BESS energy rating [Wh]
 
-# Capacity of hydrogen storage tank [dm3]
-capacityh2 = 7000
 
 # Energy storage system limitations / parameters
 SOC_min = 0.2 # Minimum allowable state of charge [-]
 SOC_max = 0.8 # Maximum allowable state of charge [-]
-SOCH2_max = capacityh2
 SOCH2_min = 0
 
 

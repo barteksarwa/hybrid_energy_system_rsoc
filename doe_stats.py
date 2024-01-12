@@ -3,40 +3,44 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
+from scipy.optimize import differential_evolution
+
 
 BREAKPOINT = 90
 
 # Assuming designs_modified_df is your DataFrame with features and targets
 # Path to the 'designs_modified' file
-designs_modified_file_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\designs_modified.xlsx'
+designs_modified_file_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\designs_with_losses_fff.xlsx'
 
 # Load the 'designs_modified' file
 designs_modified_df = pd.read_excel(designs_modified_file_path)
 
 # Define targets
 targets = {
-    'Energy Loss': designs_modified_df.iloc[:, 5],
-    'Energy Deficit': designs_modified_df.iloc[:, 6],
-    'Cost': designs_modified_df.iloc[:, 7]
+    
+    # 'Energy Deficit': designs_modified_df.iloc[:, 4],
+    # 'Energy Loss': designs_modified_df.iloc[:, 5],
+    # 'Cost': designs_modified_df.iloc[:, 6]
 }
 
 # Features
-features = designs_modified_df.iloc[:, [8, 9, 10, 11, 12]]
-feature_labels = ['PV', 'B', 'EC', 'FC', 'tank']
+features = designs_modified_df.iloc[:, [0,1,2,3]]
+feature_labels = ['PV', 'B', 'RSOFC', 'tank']
 
+cubic_combinations = list(itertools.combinations_with_replacement(range(len(features.columns)), 3))
+cubic_terms = [f"{feature_labels[i]}*{feature_labels[j]}*{feature_labels[k]}" for i, j, k in cubic_combinations]
 
-# Add quadratic terms for each feature
 quadratic_combinations = list(itertools.combinations_with_replacement(range(len(features.columns)), 2))
 quadratic_terms = [f"{feature_labels[i]}*{feature_labels[j]}" for i, j in quadratic_combinations]
-features_quadratic = pd.concat([features] + [features.iloc[:, i] * features.iloc[:, j] for i, j in quadratic_combinations], axis=1)
-features_quadratic.columns = feature_labels + quadratic_terms
-
+features = pd.concat([features] + [features.iloc[:, i] * features.iloc[:, j] for i, j in quadratic_combinations] + [features.iloc[:, i] * features.iloc[:, j] * features.iloc[:, k] for i, j,k in cubic_combinations], axis=1)
+features.columns = feature_labels + quadratic_terms + cubic_terms
+print(features)
 # Fit quadratic regression models for each target
 models = {}
 for target_name, target_values in targets.items():
     # Add a constant term to the features
-    features_const = sm.add_constant(features_quadratic)
-
+    features_const = sm.add_constant(features)
+    
     # Fit the model
     model = sm.OLS(target_values, features_const).fit()
     models[target_name] = model
@@ -45,44 +49,44 @@ for target_name, target_values in targets.items():
     coefficients = model.params[1:]  # Exclude the intercept
     sorted_coefficients = coefficients.abs().sort_values(ascending=False)
 
-    # Bar labels
-    bar_labels = feature_labels + quadratic_terms[:len(coefficients) - len(feature_labels)]
+    # # Bar labels
+    # bar_labels = feature_labels + quadratic_terms[:len(coefficients) - len(feature_labels)]
 
-    # Rearrange bar labels based on sorted coefficients
-    sorted_labels = [label for _, label in sorted(zip(coefficients.index, bar_labels),
-                                                 key=lambda x: sorted_coefficients.index.get_loc(x[0]))]
+    # # Rearrange bar labels based on sorted coefficients
+    # sorted_labels = [label for _, label in sorted(zip(coefficients.index, bar_labels),
+    #                                              key=lambda x: sorted_coefficients.index.get_loc(x[0]))]
 
-    plt.figure(figsize=(10, 5))
+    # plt.figure(figsize=(10, 5))
 
-    # Bar plot
-    ax1 = plt.gca()
-    ax1.bar(sorted_labels, sorted_coefficients, label='Magnitude of Coefficients')
+    # # Bar plot
+    # ax1 = plt.gca()
+    # ax1.bar(sorted_labels, sorted_coefficients, label='Magnitude of Coefficients')
 
-    # Calculate cumulative sum and normalize to get percentages
-    cumsum_percentages = np.cumsum(sorted_coefficients) / sorted_coefficients.sum() * 100
+    # # Calculate cumulative sum and normalize to get percentages
+    # cumsum_percentages = np.cumsum(sorted_coefficients) / sorted_coefficients.sum() * 100
 
-    # Line plot for cumulative percentages on a secondary y-axis
-    ax2 = ax1.twinx()
-    ax2.plot(sorted_labels, cumsum_percentages, color='red', linestyle='--', marker='o', label='Cumulative Percentage')
+    # # Line plot for cumulative percentages on a secondary y-axis
+    # ax2 = ax1.twinx()
+    # ax2.plot(sorted_labels, cumsum_percentages, c olor='red', linestyle='--', marker='o', label='Cumulative Percentage')
 
-    # Find the index where cumulative percentage exceeds 80%
-    exceed_index = np.argmax(cumsum_percentages > BREAKPOINT)
+    # # Find the index where cumulative percentage exceeds 80%
+    # exceed_index = np.argmax(cumsum_percentages > BREAKPOINT)
     
-    # If all values are below the breakpoint, set the index to the last one
-    if exceed_index == 0:
-        exceed_index = len(sorted_labels) - 1
+    # # If all values are below the breakpoint, set the index to the last one
+    # if exceed_index == 0:
+    #     exceed_index = len(sorted_labels) - 1
     
-    # Mark the point on the line plot with a vertical line
-    ax2.axvline(x=exceed_index, color='green', linestyle='-', label=f"Exceeds {BREAKPOINT}%")
+    # # Mark the point on the line plot with a vertical line
+    # ax2.axvline(x=exceed_index, color='green', linestyle='-', label=f"Exceeds {BREAKPOINT}%")
 
-    ax1.set_xlabel('Features')
-    ax1.set_ylabel('Magnitude of Coefficients')
-    ax2.set_ylabel('Cumulative Percentage')
-    plt.title(f'Magnitude of Coefficients and Cumulative Percentage (System {target_name})')
-    ax1.legend(loc='upper left')
-    ax2.legend(loc='upper right')
-    plt.xticks(rotation=45, ha='right')  # Rotate x-axis labels for better readability
-    plt.show()
+    # ax1.set_xlabel('Features')
+    # ax1.set_ylabel('Magnitude of Coefficients')
+    # ax2.set_ylabel('Cumulative Percentage')
+    # plt.title(f'Magnitude of Coefficients and Cumulative Percentage (System {target_name})')
+    # ax1.legend(loc='upper left')
+    # ax2.legend(loc='upper right')
+    # plt.xticks(rotation=45, ha='right')  # Rotate x-axis labels for better readability
+    # plt.show()
 
     # Display summary statistics
     print(f"Summary Statistics for Quadratic Regression Model ({target_name}):\n\n{model.summary()}\n\n")
@@ -92,5 +96,26 @@ for target_name, target_values in targets.items():
     # Predictions for the current target
     predictions = model.predict(features_const)
     model_preds[target_name] = predictions
-
+    
     print(f"Predictions for {target_name}:\n{predictions}\n")
+    print(f"Predictions for {target_name}:\n{model.params}\n")
+def f(X):
+        quadratic_combinations = list(itertools.combinations_with_replacement(range(len(X)), 2))
+        cubic_combinations = list(itertools.combinations_with_replacement(range(len(X)), 3))
+        dat = pd.DataFrame(X).T
+        features = dat.iloc[:,:]
+    
+        X2 = [features.iloc[:, i] * features.iloc[:, j] for i, j in quadratic_combinations]
+        X3 = [features.iloc[:, i] * features.iloc[:, j] *  features.iloc[:, k] for i, j, k in cubic_combinations]
+        features = pd.concat([features]+X2+X3, axis=1)
+        features_const = sm.add_constant(features, has_constant='add')
+        return model.predict(features_const).iloc[0]
+
+
+# print(f([-1,-1,1,0]))
+
+bounds = [(-1,1),(-1,1),(-1,1),(-1,1)]
+result = differential_evolution(f, bounds)
+print(result.x, result.fun)
+
+

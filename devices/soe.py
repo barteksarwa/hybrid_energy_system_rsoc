@@ -3,7 +3,8 @@ from .global_constants import *
 import matplotlib.pyplot as plt
 
 class SolidOxideElectrolyser:
-    def __init__(self):
+    def __init__(self,n):
+        self.n_cells=n
         pass
     
     @staticmethod
@@ -106,7 +107,7 @@ class SolidOxideElectrolyser:
 
     @staticmethod
     def p_soec(v_c, j):
-        return v_c * j * a_cell * n_cells 
+        return v_c * j * a_cell * self.n_cells
 
     @staticmethod
     def w_sc(s):
@@ -117,7 +118,7 @@ class SolidOxideElectrolyser:
 
     def w_soec(self, t, j, p):
         return self.first_principle_model(t, j, p) \
-            * j * a_cell * n_cells 
+            * j * a_cell * self.n_cells
 
     def w_soec_diff(self, t, j, p, w_0):
         return w_0 - self.w_soec(t, j, p)
@@ -155,10 +156,10 @@ class SolidOxideElectrolyser:
                 j = 0
         return j
 
-    @staticmethod
-    def hydrogen_production_rate(j):
-        i = j * a_cell * n_cells
-        return i * coulomb / avogadro_number / 2
+
+    def hydrogen_production_rate(self,j):
+        i = j * a_cell * self.n_cells
+        return i * coulomb / avogadro_number / 2 # mol
     
     def plot_el_characteristic(self):
         i0 = np.linspace(0, 100000, 10000)
@@ -187,7 +188,7 @@ if __name__== "__main__":
     i = 11720 #
     t = 1173 #Kelvin
     p = 115000 #Pa
-    soec_dev = SolidOxideElectrolyser()
+    soec_dev = SolidOxideElectrolyser(1)
     print(f'Nernst voltage of SOEC {soec_dev.equilibrium_voltage(t, p)}')
     print(f'Activation losses SOEC anode {soec_dev.v_acta(t, i)}')
     print(f'Activation losses SOEC cathode {soec_dev.v_actc(t, i)}')

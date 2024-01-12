@@ -1,26 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Nov 28 14:02:57 2023
+Created on Wed Jan 10 14:04:22 2024
 
 @author: Lenovo
 """
-from devices.global_constants import *
-import devices.sofc as sofc
-import numpy as np
+import pandas as pd
 
-sofc_dev = sofc.SolidOxideFuelCell()
-net_power = -400
-soch2 = 1
+# Specify the path to your CSV file
+csv_file_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\doe_output_csv_update/pv_plot_1.csv'  # Replace with the actual path
 
-p_fc = min(850 * n_cells_fc * a_cell_fc, abs(net_power))
-# if net_power[i] > 100:
-j0 = 1000 # punkt przed p_max
-j = sofc_dev.newton_method(sofc_dev.w_sofc_diff, 1100, j0, 115000, p_fc)
-consh2 = np.minimum(sofc_dev.hydrogen_consumption_rate(j)
-    * 22.4 * 3600, soch2 * capacityh2) 
-dsoc = 0 / ub
-dsoch2 = -consh2 / capacityh2
-print(dsoch2)
-print(p_fc)
-print(j)
+# Load the CSV file into a pandas DataFrame
+df = pd.read_csv(csv_file_path, delimiter=' ')
 
+# Print information about the DataFrame
+print("DataFrame Info:")
+print(df.info())
+
+# Get the last two columns
+
+# Sum the last two columns separately
+sum_last_column = df.iloc[:, -2].sum()
+sum_second_last_column = df.iloc[:, -3].sum()
+
+# Display the results
+print("Sum of the last column:", sum_last_column)
+print("Sum of the second-to-last column:", sum_second_last_column)
