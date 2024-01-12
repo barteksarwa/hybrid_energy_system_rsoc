@@ -73,7 +73,7 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
     
     # Simulation of the operation of the system
     for i in range(len(power)):
-        s = ems.ems(load[i], power[i], lion_capacity[i], qb, soch2[i], state[i],ub)
+        s = ems.ems(load[i], power[i], lion_capacity[i], qb*n_bat, soch2[i], state[i],ub)
         if s == 0: input()
         #print(s)
         #input()
@@ -89,7 +89,7 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
             loss_energy[i] = abs(net_power[i])-charge_capacity
             sofc_power[i] = 0
             soec_power[i] = 0
-            battery_power[i] = -charge_capacity * n_bat
+            battery_power[i] = -charge_capacity 
              
         elif s == 2:  # produce hydrogen in SOEC
             soec_power_max = net_power[i] # change to include maximum reasonable SOEC power as min(net_power, soec_max)
@@ -115,7 +115,7 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
             loss_energy[i] = 0
             sofc_power[i] = 0
             soec_power[i] = 0
-            battery_power[i] = discharge_capacity * n_bat
+            battery_power[i] = discharge_capacity 
                    
         elif s == 4: # generate power in fuel cell
             p_fc = min(p_max_fc * n_cells * a_cell, abs(net_power[i]))
@@ -151,7 +151,7 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
             consh2[i] = np.minimum(hydrogen_required, soch2[i] * capacityh2)
             dsoch2 = -consh2[i] / capacityh2
             sofc_power[i] = p_fc * consh2[i] / hydrogen_required
-            battery_power[i] = discharge_capacity * n_bat
+            battery_power[i] = discharge_capacity 
             deficit_energy[i] = abs(net_power[i]) - sofc_power[i]-battery_power[i]
             loss_energy[i] = 0
             soec_power[i] = 0
@@ -189,7 +189,7 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
             deficit_energy[i] = 0
             loss_energy[i] = 0
             sofc_power[i] = 0
-            battery_power[i] = charge_capacity    
+            battery_power[i] = charge_capacity
         
         else:
             pass
@@ -226,32 +226,32 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
 
     return time_csv, result
 
-output = 'model_plots_csv'
-os.makedirs(output, exist_ok=True)
+# output = 'model_plots_csv'
+# os.makedirs(output, exist_ok=True)
         
-text_csv_filename = os.path.join(output, 'test.csv')
-time_csv, result = f(24, 3, 15 ,5)
-cumulative_sum_columns = np.sum(result[:, -2:], axis=0)
-print(cumulative_sum_columns)
-np.savetxt(text_csv_filename, result, header='li_ion_capacity PV_power SOFC_power SOEC_power battery_power load SoCH2 EMS_State net_power energy_deficit energy_loss')
+# text_csv_filename = os.path.join(output, 'test.csv')
+# time_csv, result = f(24, 3, 15 ,5)
+# cumulative_sum_columns = np.sum(result[:, -2:], axis=0)
+# print(cumulative_sum_columns)
+# np.savetxt(text_csv_filename, result, header='li_ion_capacity PV_power SOFC_power SOEC_power battery_power load SoCH2 EMS_State net_power energy_deficit energy_loss')
 
-# output_directory = 'doe_output_csv_update_fff_11'
-# os.makedirs(output_directory, exist_ok=True)
+output_directory = 'doe_output_csv_update_fff_11'
+os.makedirs(output_directory, exist_ok=True)
 
-# df_designs = pd.read_excel('denormalized_designs_fff.xlsx')
-# design_table = df_designs.to_numpy()
+df_designs = pd.read_excel('denormalized_designs_fff.xlsx')
+design_table = df_designs.to_numpy()
 
-# for i, row in enumerate(design_table):
-#     print(f'Design no {i}: ',*row)
-#     # print(*row)
-#     time_csv, output = f(*row)
+for i, row in enumerate(design_table):
+    print(f'Design no {i}: ',*row)
+    # print(*row)
+    time_csv, output = f(*row)
 
-#     # Create file names with iteration number
-#     text_csv_filename = os.path.join(output_directory, f'pv_plot_{i}.csv')
-#     time_csv_filename = os.path.join(output_directory, f'time.csv')
+    # Create file names with iteration number
+    text_csv_filename = os.path.join(output_directory, f'pv_plot_{i}.csv')
+    time_csv_filename = os.path.join(output_directory, f'time.csv')
 
-#     # Save files
-#     np.savetxt(text_csv_filename, output, header='li_ion_capacity PV_power SOFC_power SOEC_power battery_power load SoCH2 EMS_State net_power energy_deficit energy_loss')
-#     if i == 1:  # Save 'time' only for the first iteration
-#         np.savetxt(time_csv_filename, time_csv)
+    # Save files
+    np.savetxt(text_csv_filename, output, header='li_ion_capacity PV_power SOFC_power SOEC_power battery_power load SoCH2 EMS_State net_power energy_deficit energy_loss')
+    if i == 1:  # Save 'time' only for the first iteration
+        np.savetxt(time_csv_filename, time_csv)
         
