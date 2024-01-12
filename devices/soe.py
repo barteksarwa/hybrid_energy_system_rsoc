@@ -150,7 +150,7 @@ class SolidOxideElectrolyser:
             if abs(dwj) < 1e-6:
                 return j
             j = j - wj / dwj
-            print(j)
+            # print(j)
             #input()
             if j < 0:
                 j = 0

@@ -8,18 +8,20 @@ Created on Thu Jan 11 00:55:57 2024
 import numpy as np
 import matplotlib.pyplot as plt
 
-li_ion_capacity, power, sofc_power, soec_power, battery_power, load, SoCH2, EMS_State, net_power, deficit_energy, loss_energy = np.loadtxt("doe_output_csv_update_fff_11/pv_plot_80.csv", unpack=True)
+li_ion_capacity, power, sofc_power, soec_power, battery_power, load, SoCH2, EMS_State, net_power, deficit_energy, loss_energy = np.loadtxt("pv_plot_29/pv_plot_32.csv", unpack=True)
 start = 0
 
 stop = -1
 # print(np.unique(EMS_State[start:stop]))
-# plt.plot(deficit_energy[start:stop])
-defnegative = np.where(deficit_energy<0)
+plt.plot(SoCH2[start:stop])
+# defnegative = np.where(deficit_energy<-10)
+print(np.sum(deficit_energy))
+print(np.sum(loss_energy))
 print(np.where(deficit_energy<0))
-print(EMS_State[defnegative])
-print(sofc_power[defnegative])
-print(deficit_energy[defnegative])
-print(net_power[defnegative])
+# print(load[155])
+# print(sofc_power[defnegative])
+# print(battery_power[defnegative])
+# print(deficit_energy[defnegative])
 # print(np.where(li_ion_capacity<0.2))
 # print(np.where(EMS_State==0.0))
 # plt.plot(li_ion_capacity[start:stop])

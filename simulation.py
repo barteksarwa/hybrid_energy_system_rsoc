@@ -48,7 +48,7 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
     lion_capacity = np.ones(len(power) + 1) * 0.2
     prodh2 = np.zeros(len(power) + 1) 
     consh2 = np.zeros(len(power) + 1)
-    soch2 = np.ones(len(power) + 1) * 0.1
+    soch2 = np.ones(len(power) + 1) * 0.9
     deficit_energy = np.zeros(len(power) + 1) 
     loss_energy = np.zeros(len(power) + 1) 
     state = np.zeros(len(power))
@@ -226,32 +226,32 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
 
     return time_csv, result
 
-# output = 'model_plots_csv'
-# os.makedirs(output, exist_ok=True)
+output = 'pv_plot_29'
+os.makedirs(output, exist_ok=True)
         
-# text_csv_filename = os.path.join(output, 'test.csv')
-# time_csv, result = f(24, 3, 15 ,5)
-# cumulative_sum_columns = np.sum(result[:, -2:], axis=0)
-# print(cumulative_sum_columns)
-# np.savetxt(text_csv_filename, result, header='li_ion_capacity PV_power SOFC_power SOEC_power battery_power load SoCH2 EMS_State net_power energy_deficit energy_loss')
+text_csv_filename = os.path.join(output, 'pv_plot_32.csv')
+time_csv, result = f(16, 20, 15, 20)
+cumulative_sum_columns = np.sum(result[:, -2:], axis=0)
+print(cumulative_sum_columns)
+np.savetxt(text_csv_filename, result, header='li_ion_capacity PV_power SOFC_power SOEC_power battery_power load SoCH2 EMS_State net_power energy_deficit energy_loss')
 
 output_directory = 'doe_output_csv_update_fff_11'
 os.makedirs(output_directory, exist_ok=True)
 
-df_designs = pd.read_excel('denormalized_designs_fff.xlsx')
-design_table = df_designs.to_numpy()
+# df_designs = pd.read_excel('denormalized_designs_fff.xlsx')
+# design_table = df_designs.to_numpy()
 
-for i, row in enumerate(design_table):
-    print(f'Design no {i}: ',*row)
-    # print(*row)
-    time_csv, output = f(*row)
+# for i, row in enumerate(design_table):
+#     print(f'Design no {i}: ',*row)
+#     # print(*row)
+#     time_csv, output = f(*row)
 
-    # Create file names with iteration number
-    text_csv_filename = os.path.join(output_directory, f'pv_plot_{i}.csv')
-    time_csv_filename = os.path.join(output_directory, f'time.csv')
+#     # Create file names with iteration number
+#     text_csv_filename = os.path.join(output_directory, f'pv_plot_{i}.csv')
+#     time_csv_filename = os.path.join(output_directory, f'time.csv')
 
-    # Save files
-    np.savetxt(text_csv_filename, output, header='li_ion_capacity PV_power SOFC_power SOEC_power battery_power load SoCH2 EMS_State net_power energy_deficit energy_loss')
-    if i == 1:  # Save 'time' only for the first iteration
-        np.savetxt(time_csv_filename, time_csv)
+#     # Save files
+#     np.savetxt(text_csv_filename, output, header='li_ion_capacity PV_power SOFC_power SOEC_power battery_power load SoCH2 EMS_State net_power energy_deficit energy_loss')
+#     if i == 1:  # Save 'time' only for the first iteration
+#         np.savetxt(time_csv_filename, time_csv)
         

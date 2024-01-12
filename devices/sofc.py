@@ -156,7 +156,7 @@ class SolidOxideFuelCell:
         return (f(t, j + h, p ,w_0) \
                 - f(t, j - h, p, w_0)) / (2 * h)
 
-    def newton_method(self, f, t, j, p, w_0, epsilon=1e-1, max_iter=200):
+    def newton_method(self, f, t, j, p, w_0, epsilon=1e-12, max_iter=200):
         for i in range(max_iter):
             wj = f(t, j, p, w_0)
             #print(wj)
