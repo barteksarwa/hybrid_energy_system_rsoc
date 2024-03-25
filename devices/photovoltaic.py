@@ -1,6 +1,4 @@
-import numpy as np
 from pvlib import pvsystem
-import matplotlib.pyplot as plt
 from .global_constants import *
 
 

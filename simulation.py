@@ -10,7 +10,7 @@ import devices.soe as soe
 import devices.sofc as sofc
 import devices.bess as bess
 import ems
-import math
+
 
 # Load the data (load, irradiance and temperature) from an excel sheet
 df_weather = pd.read_excel('load.xlsx', index_col=0, usecols='A, C:E, T')
@@ -23,13 +23,12 @@ load = load * 1000  # kWh to Wh
 pvg = pv.PhotovoltaicPanel(parameters)
 
 
-
 def f(n_pv, n_bat, n_cells_f, n_tank):
     # Overwrite parameters of the system
-    # parameters['N_s']= n_pv * 60  # number of pv modules * number of cells in one module
+    # parameters['N_s'] = n_pv * 60  # number of pv modules * number of cells in one module
     capacityh2 = n_tank * 7000 # litres
-    qb = 1280 # battery power rating per battery [W]
-    ub = qb * 1 # battery energy rating per battery [Wh] * time
+    qb = 1280  # battery power rating per battery [W]
+    ub = qb * 1  # battery energy rating per battery [Wh] * time
     n_cells = 1 * n_cells_f # number of cells * number of SOFC units
     print(f'Updated parameters: Battery energy rating: {ub * n_bat}, BESS power rating {qb* n_bat}, \n'
           f'Number of PV modules {n_pv}, Number of tanks 7000l {n_tank}, \n'
@@ -69,9 +68,7 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
     p_max_fc = p_max_fc * 0.99
     # j0_ec = j0_ec * 0.7
 
-    # p_max_ec = p_max_ec * 0.99
-    
-    # Simulation of the operation of the system
+    # Loop through the data (weather and load)
     for i in range(len(power)):
         s = ems.ems(load[i], power[i], lion_capacity[i], qb*n_bat, soch2[i], state[i],ub)
         if s == 0: input()
@@ -92,7 +89,8 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
             battery_power[i] = -charge_capacity 
              
         elif s == 2:  # produce hydrogen in SOEC
-            soec_power_max = net_power[i] # change to include maximum reasonable SOEC power as min(net_power, soec_max)
+            soec_power_max = net_power[i]
+            # change to include maximum reasonable SOEC power line above as min(net_power, soec_max)
             hydrogen_possible_production = soe_dev.hydrogen_production_rate(soe_dev.newton_method(
                     soe_dev.w_soec_diff, t, j0_fc, 115000, soec_power_max)) * 22.4 * 3600
             prodh2[i] = np.minimum(hydrogen_possible_production, capacityh2 - soch2[i] * capacityh2)
@@ -121,7 +119,7 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
             p_fc = min(p_max_fc * n_cells * a_cell, abs(net_power[i]))
             # print(f' S4 fuel cell power {p_fc} W')
             # if net_power[i] > 100:
-            j0 = j0_fc # punkt przed p_ma
+            j0 = j0_fc # point ahead of p_ma
             #print(sofc_dev.newton_method(sofc_dev.w_sofc_diff, 1100, j0, 115000, p_fc, 100))
             hydrogen_required = abs(sofc_dev.hydrogen_consumption_rate(
                 sofc_dev.newton_method(sofc_dev.w_sofc_diff, t, j0, 115000, p_fc))) * 22.4 * 3600
@@ -144,9 +142,9 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
             net = net_power[i]+discharge_capacity
             p_fc = min(p_max_fc * n_cells * a_cell, abs(net))
             # print(f' S5 fuel cell power {p_fc} W')
-            j0 = j0_fc # punkt przed p_max mA/cm2
+            j0 = j0_fc # point ahead of p_max [mA/cm2]
             dsoc = - discharge_capacity / (ub * n_bat)
-            hydrogen_required =abs(sofc_dev.hydrogen_consumption_rate(
+            hydrogen_required = abs(sofc_dev.hydrogen_consumption_rate(
                 sofc_dev.newton_method(sofc_dev.w_sofc_diff, t, j0, 115000, p_fc))) * 22.4 * 3600
             consh2[i] = np.minimum(hydrogen_required, soch2[i] * capacityh2)
             dsoch2 = -consh2[i] / capacityh2
@@ -178,7 +176,8 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
         elif s == 8:  # produce hydrogen in SOEC and charge battery
             charge_capacity = -bess_bat.bess_charge_capacity(qb, 
                                 bc, ub, lion_capacity[i], SOC_max, 1) * n_bat    
-            soec_power_max = net_power[i] - charge_capacity # change to include maximum reasonable SOEC power as min(net_power, soec_max)
+            soec_power_max = net_power[i] - charge_capacity
+            # change to include maximum reasonable SOEC power as min(net_power, soec_max) line above (instead of below)
             j0 = j0_fc
             hydrogen_possible_production = soe_dev.hydrogen_production_rate(soe_dev.newton_method(
                     soe_dev.w_soec_diff, t, j0, 115000, soec_power_max)) * 22.4 * 3600
@@ -193,30 +192,12 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
         
         else:
             pass
-            # if i < 1:  # print initial parameters
-            #     print(discharge_capacity, dsoc, qb,
-            #           bd, ub, lion_capacity[i], g_max)
-                
+
         lion_capacity[i+1] = lion_capacity[i] + dsoc
         soch2[i+1] = soch2[i] + dsoch2
         state[i] = s
-    
-    # for i in range(len(lion_capacity)):
-    #     if lion_capacity[i] < 0.2:
-    #         lion_capacity[i] = 0.2
-            
-    # for i in range(len(soch2)):
-    #     if soch2[i] > 1.0:
-    #         soch2[i] = 1.0
-    #     elif soch2[i] < 0:
-    #         soch2[i] = 0
-            
-    # for i in range(len(consh2)):
-    #     if consh2[i] < 0.0:
-    #         consh2[i] = 0.0
-    
-    producedh2 = np.cumsum(prodh2)
-    consumedh2 = np.cumsum(consh2)
+    # producedh2 = np.cumsum(prodh2)
+    # consumedh2 = np.cumsum(consh2)
     print(np.unique(state))
     time_csv = np.array(time, dtype='datetime64')
     result = np.column_stack((np.array(lion_capacity[:-1]), np.array(power), np.array(sofc_power),
@@ -226,18 +207,28 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
 
     return time_csv, result
 
-output = 'pv_plot_29'
+# Path to the file with results
+output = 'result_sim'
 os.makedirs(output, exist_ok=True)
-        
-text_csv_filename = os.path.join(output, 'pv_plot_32.csv')
-time_csv, result = f(16, 20, 15, 20)
-cumulative_sum_columns = np.sum(result[:, -2:], axis=0)
+text_csv_filename = os.path.join(output, 'opt_results_testbat.csv')
+
+# State the size of the system
+time_csv, result = f(8, 3, 5, 1)
+
+# Print the cumulative sum of energy deficit and load
+cumulative_sum_columns = np.sum(result[:-1, -2:], axis=0)
 print(cumulative_sum_columns)
 np.savetxt(text_csv_filename, result, header='li_ion_capacity PV_power SOFC_power SOEC_power battery_power load SoCH2 EMS_State net_power energy_deficit energy_loss')
 
-output_directory = 'doe_output_csv_update_fff_11'
-os.makedirs(output_directory, exist_ok=True)
 
+# # Run the simulation in a loop
+
+# # Create output directory
+# output_directory = 'doe_output_csv'
+# os.makedirs(output_directory, exist_ok=True)
+
+
+# # Read possible designs of the system from the DOE for the simulation
 # df_designs = pd.read_excel('denormalized_designs_fff.xlsx')
 # design_table = df_designs.to_numpy()
 
@@ -249,9 +240,9 @@ os.makedirs(output_directory, exist_ok=True)
 #     # Create file names with iteration number
 #     text_csv_filename = os.path.join(output_directory, f'pv_plot_{i}.csv')
 #     time_csv_filename = os.path.join(output_directory, f'time.csv')
-
+#     time_csv_str = np.datetime_as_string(time_csv)
 #     # Save files
 #     np.savetxt(text_csv_filename, output, header='li_ion_capacity PV_power SOFC_power SOEC_power battery_power load SoCH2 EMS_State net_power energy_deficit energy_loss')
 #     if i == 1:  # Save 'time' only for the first iteration
-#         np.savetxt(time_csv_filename, time_csv)
+#         np.savetxt(time_csv_filename, time_csv_str, fmt='%s')
         

@@ -48,3 +48,4 @@ def ems(p_l, p_pv, SOC, p_bess, hydrogen_SOC, previous_s, ub):
 # s = 6 - SOC == SOC_min and hydrogen_SOC == hydrogen_SOC_min - deficit of energy
 # s = 7 - SOC == SOC_max and hydrogen_SOC == hydrogen_SOC_max - loss of energy
 # s = 8 - SOC < SOC_max and SOC_h2 < SOC_H2_max and p_bess < p_net - produce hydrogen and charge battery
+

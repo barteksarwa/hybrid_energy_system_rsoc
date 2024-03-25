@@ -1,6 +1,7 @@
 import numpy as np
 from .global_constants import *
 import matplotlib.pyplot as plt
+# import InitParams.InitParams
 
 class SolidOxideFuelCell:
     def __init__(self, n):
@@ -43,7 +44,7 @@ class SolidOxideFuelCell:
     def binary_diffusion_coefficient_anode_h2o(t, p):
         p_fuller = p*1e-5 #bar
         m_h2o_h2_fuller = m_h2o_h2*1000 #g/mol
-        D_fuller = 0.00143 * t**1.75 / (p_fuller * np.sqrt(m_h2o_h2_fuller) * \
+        D_fuller = 0.00143 * t**1.75 / (p_fuller * np.sqrt(m_h2o_h2_fuller) *
                                 ((sigma_f_h2o)**1/3 + (sigma_f_h2)**1/3)**2) #cm2/s
         return D_fuller*1e-4 #m2/s
             
@@ -51,7 +52,7 @@ class SolidOxideFuelCell:
     def binary_diffusion_coefficient_anode_h2(t, p):
         p_fuller = p*1e-5 #bar
         m_h2o_h2_fuller = m_h2o_h2*1000 #g/mol
-        D_fuller = 0.00143 * t**1.75 / (p_fuller * np.sqrt(m_h2o_h2) * \
+        D_fuller = 0.00143 * t**1.75 / (p_fuller * np.sqrt(m_h2o_h2) *
                                 ((sigma_f_h2o)**1/3 + (sigma_f_h2)**1/3)**2)
         return D_fuller*1e-4 #m2/sr
 
@@ -148,12 +149,12 @@ class SolidOxideFuelCell:
     def q_sofc(self, t, s_gen, s_in, s_out):
         return -t * self.s_gen(t, j) - t * (s_in - s_out)
 
-    def e_th_sofc(self, t, q_soec):
-        return self.q_sofc(t, s_gen, s_in, s_out) * (1 - t_0 / t)
+    # def e_th_sofc(self, t, q_soec):
+    #     return self.q_sofc(t, s_gen, s_in, s_out) * (1 - t_0 / t)
 
     @staticmethod
     def central_difference_quotient(f, t, j, p, w_0, h=1e-6):
-        return (f(t, j + h, p ,w_0) \
+        return (f(t, j + h, p ,w_0)
                 - f(t, j - h, p, w_0)) / (2 * h)
 
     def newton_method(self, f, t, j, p, w_0, epsilon=1e-12, max_iter=200):
@@ -179,7 +180,7 @@ class SolidOxideFuelCell:
         return i * coulomb / avogadro_number / 2
     
     def plot_fuel_cell_characteristic(self):
-        i0 = np.linspace(0, 15000, 10000)
+        i0 = np.linspace(0, 20000, 20000)
         v = []
         p = []
         for i in i0:
@@ -191,7 +192,7 @@ class SolidOxideFuelCell:
         max_p = np.nanmax(p)
         index_max_j = np.nanargmax(p)
         max_j = i0[index_max_j]
-        print(f'Maximum power of fuel cell {max_p}')
+        # print(f'Maximum power of fuel cell {max_p}')
         max_index = np.nanargmax(p)
 
         plt.plot(i0, p, '-b', markersize=5)
@@ -206,8 +207,9 @@ if __name__== "__main__":
     i = 7000 #A/m2
     p = 115000 #Pa
     t = 1173 #Kelvin
-    n_cells=8
+    n_cells=1
     sofc_dev = SolidOxideFuelCell(n_cells)
+    sofc_dev.plot_fuel_cell_characteristic()
     print(sofc_dev.eff_diff_hydrogen(t,p))
     print(f'Nernst voltage of SOFC {sofc_dev.equilibrium_voltage(t, p)}')
     print(f'Activation losses SOFC anode {sofc_dev.v_acta(t, i)}')
@@ -216,12 +218,9 @@ if __name__== "__main__":
     print(f'Ohmic losses SOFC {sofc_dev.v_ohm(t, i)}')
     print(f'SOFC voltage {sofc_dev.first_principle_model(t, i, p)}')
     j = np.linspace(0,12000,1000)
-    
-    plt.plot(j,sofc_dev.w_sofc(t,j,115000) )
-    # plt.show()
+    # plt.plot(j,sofc_dev.w_sofc(t,j,115000) )
     # plt.show()
     print(sofc_dev.newton_method(sofc_dev.w_sofc_diff, t, 8349.38493849385, 115000, 390.8569212126979))
-    
-    # p_max_fc, j_max =  sofc_dev.plot_fuel_cell_characteristic()
-    # print(p_max_fc * n_cells * a_cell, j_max)
+#   p_max_fc, j_max =  sofc_dev.plot_fuel_cell_characteristic()
+#   print(p_max_fc * n_cells * a_cell, j_max)
 
