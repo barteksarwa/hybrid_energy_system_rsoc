@@ -10,7 +10,7 @@ import InitParams.InitParams
 
 BREAKPOINT = 90
 
-# Assuming designs_modified_df is your DataFrame with features and targets
+
 # Path to the 'designs_modified' file
 designs_modified_file_path = 'DOE14.csv'
 

@@ -3,7 +3,6 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 
-# Assuming designs_modified_df is your DataFrame with features and targets
 # Path to the 'designs_modified' file
 designs_modified_file_path = 'C:\\Users\\Lenovo\\Documents\\python_projects\\thesis\\project\\simulation\\designs_with_losses.xlsx'
 
