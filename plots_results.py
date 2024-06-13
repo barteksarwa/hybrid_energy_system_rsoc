@@ -24,20 +24,11 @@ def get_date_label(time_index, start):
 
 # start = 2088+24 # March 28
 # stop = 2112+24
-# start = 4296 # June
-# stop = 4320
-# start = 6504 # September 28
-# stop = 6528
-# start = 7320 # November 1
-# stop = 7344
 
 time = pd.read_excel('Load.xlsx', index_col=0, usecols='A')
 time = time.index.to_numpy()
 
-# hour = pd.read_excel('Load.xlsx', index_col=0, usecols='AH')
-# time = time.index.to_numpy()
-
-li_ion_capacity, power, sofc_power, soec_power, battery_power, load, SoCH2, EMS_State, net_power, deficit_energy, loss_energy = np.loadtxt("result_article\\results.csv", unpack=True)
+li_ion_capacity, power, sofc_power, soec_power, battery_power, load, SoCH2, EMS_State, net_power, deficit_energy, loss_energy = np.loadtxt("result_article_before\\.csv", unpack=True)
 t = np.linspace(0,len(time),len(time))
 
 time_ranges = [
@@ -46,7 +37,6 @@ time_ranges = [
     (6504, 6528),            # September 28
     (7320, 7344)             # November 1
 ]
-
 
 # 2x2 plots
 fig = plt.figure()
@@ -79,7 +69,7 @@ for idx, (start, stop) in enumerate(time_ranges):
     # Plotting on the upper subplot (state of charge data)
     ax2.plot(time[start:stop], SoCH2[start:stop], color='blue', label=r'$SOC_{\mathrm{H_{2}}} [-]$')
     ax2.plot(time[start:stop], li_ion_capacity[start:stop], color='black', label=r'$SOC_{\mathrm{BESS}} [-]$')
-    ax2.set_ylabel('State of Charge [-]', color='black')
+    ax2.set_ylabel('$SOC$ [-]', color='black')
     ax2.set_ylim([0, 1.05])
     ax2.tick_params('y', colors='black')
     ax2.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
@@ -88,11 +78,17 @@ for idx, (start, stop) in enumerate(time_ranges):
     ax2.spines['right'].set_visible(True)
 
     # Set major locator to hours with a specified interval
-    ax1.xaxis.set_major_locator(mdates.HourLocator(range(0, 24), 4))
+    ax1.xaxis.set_major_locator(mdates.HourLocator(range(0, 24), 12))
 
     # Format x-axis with custom date format
     date_format = '%H:%M:%S'
     ax1.xaxis.set_major_formatter(mdates.DateFormatter(date_format))
+    if col == 1:
+        ax1.set_ylabel('')
+        ax1.tick_params(labelleft=False)
+        ax2.set_ylabel('')
+        ax2.tick_params(labelleft=False)
+
 
 # Combine legends
 handles1, labels1 = ax1.get_legend_handles_labels()
@@ -101,20 +97,20 @@ combined_handles = handles1 + handles2
 combined_labels = labels1 + labels2
 
 plt.legend(
-    combined_handles, combined_labels, loc='upper center', bbox_to_anchor=(0, -0.15),
-    fancybox=False, shadow=False, ncol=6
+    combined_handles, combined_labels, loc=9, bbox_to_anchor=(-0.2, -0.5),
+    fancybox=False, shadow=False, ncol=2
 )
 
 # Set overall title
-plt.suptitle('Simulation of the microgrid', y=0.95)
+plt.suptitle('Simulation of the microgrid', y=0.98)
 
 # Adjust layout to make room for the legend
 fig.tight_layout(rect=[0, 0, 1, 0.95])
-fig.subplots_adjust(hspace=0.3)
+fig.subplots_adjust(hspace=0.38)
 
 # Show the plot
-plt.show()
-fig.savefig("combinedfourdays.pdf", format='pdf')
+# plt.show()
+fig.savefig("combinedfourdays.pdf", format='pdf', bbox_inches='tight')
 
 # # Create a figure and axis
 # fig, ax1 = plt.subplots()
