@@ -1,16 +1,11 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Nov 10 14:07:51 2023
-
-@author: Lenovo
-"""
-
 from pyDOE2 import fullfact
 import pandas as pd
 
+EXCEL_FILE_NAME = 'designs_fff.xlsx'
+
 # Define the levels for each factor
 factor_levels = {
-    "Photovoltaic Modules (number)": [i for i in range(17, 33)],
+    "Photovoltaic Modules (number)": [i for i in range(16, 33)],
     "Battery Power (number)": [i for i in range(6, 25)],
     "Solid Oxide Stack (number of cells)": [i for i in range(2, 31)],
     "Hydrogen Storage Tanks (number of tanks)": [i for i in range(2,13)]
@@ -27,7 +22,7 @@ design = fullfact([3,3,3,3])-1
 df = pd.DataFrame(design, columns=factors)
 
 # Print the design matrix
-df.to_excel('designs_fff_last.xlsx', index=False)
+df.to_excel(EXCEL_FILE_NAME, index=False)
 
 for factor in factors:
     lower_bound = min(factor_levels[factor])
@@ -37,6 +32,5 @@ for factor in factors:
     df[factor] = df[factor].apply(lambda x: x * scaling_factor + (lower_bound + upper_bound) / 2)
 
 # Save the denormalized design matrix to an Excel file
-df.to_excel('denormalized_designs_fff_last.xlsx', index=False)
-
-# 8, 4, (0.39223788+1)/2*31+5 ,(0.12311233+1)/2*5 +1
+denormalized_excel_file_name = f'{EXCEL_FILE_NAME.split(".")[0]}_denormalized.xlsx'
+df.to_excel(denormalized_excel_file_name, index=False)
