@@ -208,12 +208,12 @@ def f(n_pv, n_bat, n_cells_f, n_tank):
     return time_csv, result
 
 # Path to the file with results
-output = 'result_sim'
+output = 'result_article_before'
 os.makedirs(output, exist_ok=True)
-text_csv_filename = os.path.join(output, 'opt_results_testbat.csv')
+text_csv_filename = os.path.join(output, '.csv')
 
 # State the size of the system
-time_csv, result = f(8, 3, 5, 1)
+time_csv, result = f(16, 8, 8, 3)
 
 # Print the cumulative sum of energy deficit and load
 cumulative_sum_columns = np.sum(result[:-1, -2:], axis=0)
@@ -221,22 +221,22 @@ print(cumulative_sum_columns)
 np.savetxt(text_csv_filename, result, header='li_ion_capacity PV_power SOFC_power SOEC_power battery_power load SoCH2 EMS_State net_power energy_deficit energy_loss')
 
 
-# # Run the simulation in a loop
+# Run the simulation in a loop
 
 # # Create output directory
-# output_directory = 'doe_output_csv'
+# output_directory = 'doe_output_csv_last'
 # os.makedirs(output_directory, exist_ok=True)
-
-
+#
+#
 # # Read possible designs of the system from the DOE for the simulation
-# df_designs = pd.read_excel('denormalized_designs_fff.xlsx')
+# df_designs = pd.read_excel('denormalized_designs_fff_last.xlsx')
 # design_table = df_designs.to_numpy()
-
+#
 # for i, row in enumerate(design_table):
 #     print(f'Design no {i}: ',*row)
 #     # print(*row)
 #     time_csv, output = f(*row)
-
+#
 #     # Create file names with iteration number
 #     text_csv_filename = os.path.join(output_directory, f'pv_plot_{i}.csv')
 #     time_csv_filename = os.path.join(output_directory, f'time.csv')
@@ -245,4 +245,4 @@ np.savetxt(text_csv_filename, result, header='li_ion_capacity PV_power SOFC_powe
 #     np.savetxt(text_csv_filename, output, header='li_ion_capacity PV_power SOFC_power SOEC_power battery_power load SoCH2 EMS_State net_power energy_deficit energy_loss')
 #     if i == 1:  # Save 'time' only for the first iteration
 #         np.savetxt(time_csv_filename, time_csv_str, fmt='%s')
-        
+#

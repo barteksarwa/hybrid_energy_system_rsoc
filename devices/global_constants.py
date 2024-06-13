@@ -70,6 +70,7 @@ a_cell = 0.01  # m^2
 # a_cell_fc = 0.05  # m^2 wpisane zeby dopasowac stos
 
 # Photovoltaic panel parameteres from the datasheet
+# Datasheet https://wpmgreenenergy.com/wp-content/uploads/2019/08/SPP320M60B.pan_.pdf
 
 parameters = {
     'Name': 'Jiangsu Sunport Power Corp. Ltd. SPP320M60B',
@@ -82,7 +83,7 @@ parameters = {
     'V_mp_ref': 32.4,
     'alpha_sc': 0.0062,
     'beta_oc': -0.121,
-    'a_ref': 1.428,
+    'a_ref': 1.428, # modified ideality factor for reference conditions based on De Soto
     'v_TSTC': 1.38e-23*(25+273.15)/1.602e-19,
     'I_L_ref': 10.36,
     'I_o_ref': 1e-10,

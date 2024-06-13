@@ -10,10 +10,10 @@ import pandas as pd
 
 # Define the levels for each factor
 factor_levels = {
-    "Photovoltaic Modules (number)": [ i for i in range(6, 25)],
-    "Battery Power (number)": [i for i in range(1, 12)],
-    "Solid Oxide Stack (number of cells)": [ i for i in range(1, 16)],
-    "Hydrogen Storage Tanks (number of tanks)": [ i for i in range(1,6)]
+    "Photovoltaic Modules (number)": [i for i in range(17, 33)],
+    "Battery Power (number)": [i for i in range(6, 25)],
+    "Solid Oxide Stack (number of cells)": [i for i in range(2, 31)],
+    "Hydrogen Storage Tanks (number of tanks)": [i for i in range(2,13)]
 }
 
 # Create a list of factors and their corresponding levels
@@ -27,7 +27,7 @@ design = fullfact([3,3,3,3])-1
 df = pd.DataFrame(design, columns=factors)
 
 # Print the design matrix
-df.to_excel('designs_fff.xlsx', index=False)
+df.to_excel('designs_fff_last.xlsx', index=False)
 
 for factor in factors:
     lower_bound = min(factor_levels[factor])
@@ -37,6 +37,6 @@ for factor in factors:
     df[factor] = df[factor].apply(lambda x: x * scaling_factor + (lower_bound + upper_bound) / 2)
 
 # Save the denormalized design matrix to an Excel file
-df.to_excel('denormalized_designs_fff_14.xlsx', index=False)
+df.to_excel('denormalized_designs_fff_last.xlsx', index=False)
 
 # 8, 4, (0.39223788+1)/2*31+5 ,(0.12311233+1)/2*5 +1

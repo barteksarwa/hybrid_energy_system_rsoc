@@ -30,10 +30,10 @@ class SolidOxideFuelCell:
         return g_c * np.exp(-e_actc / R / t) # A /m2 = A/m2* exp((J/mol / (J/(MolK)*K)))
 
     def v_acta(self, t, j):
-        return R * t * np.arcsinh(j / 2 / self.j_0a(t)) / n_e / F # V 
+        return 2 * R * t * np.arcsinh(j / 2 / self.j_0a(t)) / n_e / F # V
 
     def v_actc(self, t, j):
-        return R * t * np.arcsinh(j / 2 / self.j_0c(t)) / n_e / F # V
+        return 2 * R * t * np.arcsinh(j / 2 / self.j_0c(t)) / n_e / F # V
 
     @staticmethod
     def v_ohm(t, j):
@@ -86,7 +86,7 @@ class SolidOxideFuelCell:
 
     def eff_diff_hydrogen(self, t, p):
         return electrode_porosity / electrode_tortuosity / \
-            (1 / self.knudsen_h2(t) + 1 / self.binary_diffusion_coefficient_cath(t, p)) #m2/s
+            (1 / self.knudsen_h2(t) + 1 / self.binary_diffusion_coefficient_anode_h2(t, p)) #m2/s
 
     def v_conca(self, t, j, p):
         p_h2o = self.partial_pressure(p, x_h2o)
@@ -200,7 +200,7 @@ class SolidOxideFuelCell:
         plt.xlabel("j (A/m2)")
         plt.ylabel("p (W/m2)")
         plt.title('Fuel cell characteristic')
-        plt.show()
+        # plt.show()
         return max_p, max_j
 
 if __name__== "__main__":
@@ -209,8 +209,7 @@ if __name__== "__main__":
     t = 1173 #Kelvin
     n_cells=1
     sofc_dev = SolidOxideFuelCell(n_cells)
-    sofc_dev.plot_fuel_cell_characteristic()
-    print(sofc_dev.eff_diff_hydrogen(t,p))
+    # sofc_dev.plot_fuel_cell_characteristic()
     print(f'Nernst voltage of SOFC {sofc_dev.equilibrium_voltage(t, p)}')
     print(f'Activation losses SOFC anode {sofc_dev.v_acta(t, i)}')
     print(f'Activation losses SOFC cathode {sofc_dev.v_actc(t, i)}')
@@ -220,7 +219,7 @@ if __name__== "__main__":
     j = np.linspace(0,12000,1000)
     # plt.plot(j,sofc_dev.w_sofc(t,j,115000) )
     # plt.show()
-    print(sofc_dev.newton_method(sofc_dev.w_sofc_diff, t, 8349.38493849385, 115000, 390.8569212126979))
+    # print(sofc_dev.newton_method(sofc_dev.w_sofc_diff, t, 8349.38493849385, 115000, 390.8569212126979))
 #   p_max_fc, j_max =  sofc_dev.plot_fuel_cell_characteristic()
 #   print(p_max_fc * n_cells * a_cell, j_max)
 

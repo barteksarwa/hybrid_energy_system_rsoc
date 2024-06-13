@@ -46,6 +46,14 @@ class SolidOxideElectrolyser:
                                 ((sigma_f_h2o)**1/3 + (sigma_f_h2)**1/3)**2)
         return D_fuller*1e-4
 
+    @staticmethod
+    def binary_diffusion_coefficient_anode_h2(t, p):
+        p_fuller = p*1e-5 #bar
+        m_h2o_h2_fuller = m_h2o_h2*1000 #g/mol
+        D_fuller = 0.00143 * t**1.75 / (p_fuller * np.sqrt(m_h2o_h2) *
+                                ((sigma_f_h2o)**1/3 + (sigma_f_h2)**1/3)**2)
+        return D_fuller*1e-4 #m2/sr
+
     def binary_diffusion_coefficient_cath(self, t, p):
         p_fuller = p*1e-5 #bar
         m_n2_o2_fuller = m_n2_o2*1000 #g/mol
@@ -76,7 +84,7 @@ class SolidOxideElectrolyser:
 
     def eff_diff_hydrogen(self, t, p):
         return electrode_porosity / electrode_tortuosity / \
-            (1 / self.knudsen_h2(t) + 1 / self.binary_diffusion_coefficient_cath(t, p)) # poprawic
+            (1 / self.knudsen_h2(t) + 1 / self.binary_diffusion_coefficient_anode_h2(t, p)) # poprawic
 
     def v_conca(self, t, j, p):
         p_h2o = self.partial_pressure(p, x_h2o_ec)
@@ -85,11 +93,11 @@ class SolidOxideElectrolyser:
             ((1 + j * R * t * sigma_a / 2 / F / self.eff_diff_steam(t, p) / p_h2)/
             (1 - j * R * t * sigma_a / 2 / F / self.eff_diff_steam(t, p) / p_h2o))
 
-    # def v_concc(self, t, j, p):
-    #     # p_o2 = self.partial_pressure(p, x_o2)
-    #     # return R * t / n_e / F * np.log((1 + j * R * t * sigma_c /
-    #     #         2 / F / self.eff_diff_oxygen(t, p) / p_o2)**.5)
-    #     return 0
+    def v_concc(self, t, j, p):
+        p_o2 = self.partial_pressure(p, x_o2)
+        return R * t / n_e / F * np.log((1 + j * R * t * sigma_c /
+                2 / F / self.eff_diff_oxygen(t, p) / p_o2)**.5)
+        # return 0
 
     def first_principle_model(self, t, j, p):
         j0a = self.j_0a(t)
