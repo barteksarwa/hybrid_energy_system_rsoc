@@ -7,6 +7,7 @@ import InitParams
 
 BREAKPOINT = 90
 MAX_LPSR = 0.0
+PENALTY_COEFF = 1e6
 OBJECTIVE_FUN = -3 # -2 for ASC, -3 for master thesis function
 
 # Path to the 'designs_modified' file
@@ -122,7 +123,7 @@ def f(X):
         max_lpsr = MAX_LPSR
         penalty = 0
         if lpsr > max_lpsr:
-                penalty = 1e6 * (lpsr - max_lpsr)
+                penalty = PENALTY_COEFF * (lpsr - max_lpsr)
         return f + penalty
 
 bounds = [(-1,1),(-1,1),(-1,1),(-1,1)]
