@@ -2,16 +2,18 @@ import itertools
 import numpy as np
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from scipy.optimize import differential_evolution
 import InitParams
 
 BREAKPOINT = 90
-MAX_LPSR = 0.0
+MAX_LPSR = 0
 PENALTY_COEFF = 1e6
-OBJECTIVE_FUN = -3 # -2 for ASC, -3 for master thesis function
+PENALTY_COEFF_SURPLUS = 0
+OBJECTIVE_FUN = -3 # -3 for ASC, -4 for master thesis function, -2 only deficit and loss
 
-# Path to the 'designs_modified' file
-results_for_all_designs = 'doe_lower.csv'
+# Path to the input file generated with opt_fun_to_excel
+results_for_all_designs = 'doe_2706.csv'
 
 # Load the 'designs_modified' file
 results = np.loadtxt(results_for_all_designs)
@@ -39,14 +41,15 @@ features = np.concatenate((features, feat_quad), axis=1)
 models = {}
 target_values = results[:,OBJECTIVE_FUN]
 target_lspr = results[:,-1]
+target_surplus = results[:, -6]
+
 # Add a constant term to the features
 features_const = sm.add_constant(features)
-# print(features_const)
-
 
 # Fit the model
 model = sm.OLS(target_values, features_const).fit()
 model_lspr = sm.OLS(target_lspr, features_const).fit()
+model_surplus = sm.OLS(target_surplus, features_const).fit()
 
 # Display bar chart for coefficients
 coefficients = model.params[1:]  # Exclude the intercept
@@ -61,19 +64,23 @@ sorted_labels = bar_labels[sorted_coefficients_idx]
 
 # # Bar plot
 ax1 = plt.gca()
-ax1.bar(sorted_labels, sorted_coefficients, label='Magnitude of Coefficients')
+ax1.bar(sorted_labels, sorted_coefficients, label=r'Magnitude of effects $\beta$')
 ax1.set_xticklabels(sorted_labels, rotation=45, ha="right")
-ax1.set_ylabel('Magnitude of Coefficients')
+ax1.set_ylabel(r'Magnitude of effects $\beta_{i,j}$', color='blue')
 ax1.tick_params(axis='x', which='both', bottom=False)
+ax1.tick_params(axis='y', colors='blue')
+
 
 # # Calculate cumulative sum and normalize to get percentages
 cumsum_percentages = np.cumsum(sorted_coefficients) / sorted_coefficients.sum() * 100
 
 # Line plot for cumulative percentages on a secondary y-axis
 ax2 = ax1.twinx()
-ax2.set_ylabel('Cumulative Percentage [\%]')
+ax2.set_ylabel('Cumulative Percentage [\%]', color='red')
 ax2.plot(sorted_labels, cumsum_percentages, color='red', linestyle='--', marker='o', label='Cumulative Percentage')
-plt.savefig('master0test.pdf', format='pdf', bbox_inches='tight')
+ax2.tick_params(axis='y', colors='red')
+ax2.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+# plt.savefig('paretoasc.pdf', format='pdf', bbox_inches='tight')
 
 # # Find the index where cumulative percentage exceeds 80%
 # exceed_index = np.argmax(cumsum_percentages > BREAKPOINT)
@@ -101,12 +108,7 @@ print(f"Summary Statistics for Quadratic Regression Model:\n\n{model.summary()}\
 # Predictions for the current target
 predictions = model.predict(features_const)
 
-# def interpolate_lpsr(X):
-#         diffs = features[:, :4] - X
-#         distances = np.linalg.norm(diffs, axis=1)
-#         nearest_index = np.argmin(distances)
-#         lpsr = lpsr_values[nearest_index]
-#         return lpsr
+
 def f(X):
         quadratic_combinations = list(itertools.combinations_with_replacement(range(len(X)), 2))
         features = np.array(X)[np.newaxis,:]
@@ -119,17 +121,35 @@ def f(X):
         f = model.predict(features_const)
 
         lpsr = model_lspr.predict(features_const)
-        # print(lpsr)
         max_lpsr = MAX_LPSR
         penalty = 0
         if lpsr > max_lpsr:
                 penalty = PENALTY_COEFF * (lpsr - max_lpsr)
-        return f + penalty
+
+        surplus = model_surplus.predict(features_const)
+        surplus_penalty = PENALTY_COEFF_SURPLUS * surplus
+        # surplus_penalty = 0
+        return f + penalty + surplus_penalty
 
 bounds = [(-1,1),(-1,1),(-1,1),(-1,1)]
 result = differential_evolution(f, bounds)
 print(result.x, result.fun)
 
+def denormalize_value(normalized_value, original_min, original_max):
+    return original_min + (original_max - original_min) * (normalized_value + 1) / 2
+
+def denormalize(normalized_values, ranges):
+    denormalized_values = []
+    for i, value in enumerate(normalized_values):
+        denormalized_values.append(denormalize_value(value, ranges[i][0], ranges[i][1]))
+    return denormalized_values
+
+# Given ranges
+ranges = [(16, 48), (3, 23), (6, 30), (8, 61)]
+
+# Denormalize
+denormalized_values = denormalize(result.x, ranges)
+print(denormalized_values)
 
 # import seaborn as sns
 
