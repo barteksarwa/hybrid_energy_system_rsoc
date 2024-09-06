@@ -7,11 +7,13 @@ import sys
 import os
 
 # sys.path.append("..")
-# import InitParams
+import InitParams
 
 time = pd.read_excel('Load.xlsx', index_col=0, usecols='A')
 time = time.index.to_numpy()
 load = pd.read_excel('Load.xlsx', usecols='T')
+load = pd.to_numeric(load.squeeze(), errors='coerce')
+
 # FILES_DIRECTORY = r'C:\Users\Lenovo\Documents\python_projects\thesis\project\simulation\doe_output_csv'
 # os.chdir(FILES_DIRECTORY)
 
@@ -61,59 +63,50 @@ load = pd.read_excel('Load.xlsx', usecols='T')
 #
 #         plt.show()
 #
-        
-#
-#
-#
-#
-# # Define the number of days in each month
-# days_in_month = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 30)
-#
-# # Load your hourly load data (replace this with your actual data)
-# hourly_load = load  # You should have 8760 hourly data points
-#
-# # Initialize a list to store the monthly load aggregates
-# monthly_load_aggregates = []
-#
-# # Calculate the monthly aggregates
-# start_idx = 0
-# for days in days_in_month:
-#     # Slice the hourly load data for the current month
-#     month_data = hourly_load[start_idx:start_idx + (days * 24)]
-#
-#     # Calculate the sum for the current month
-#     monthly_sum = sum(month_data)
-#
-#     # Append the sum to the list of monthly load aggregates
-#     monthly_load_aggregates.append(monthly_sum)
-#
-#     # Update the start index for the next month
-#     start_idx += days * 24
-#
-# # The monthly_load_aggregates list now contains the aggregated values for each month
-#
-# # If you want to convert it to a tuple, you can do:
-# monthly_load_aggregates_tuple = tuple(monthly_load_aggregates)
-# print(monthly_load_aggregates_tuple)
-#
-# months = [
-#     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-#     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-# ]
-# def divide_by_1000(x, pos):
-#     return f'{int(x / 1000)}'
-#
-# # Create a bar chart
-# plt.figure(figsize=(10, 6))
-# plt.bar(months, monthly_load_aggregates_tuple, color='m')
-# plt.xlabel("Months")
-# plt.ylabel("Monthly Electricity Demand [kWh]")
-# plt.title("Generated Monthly Load Profile")
-# plt.grid(axis='y', linestyle='--', alpha=0.7)
-# plt.gca().get_yaxis().set_major_formatter(FuncFormatter(divide_by_1000))
-# # Display the chart
-# plt.show()
-#
-#
 
+# Define the number of days in each month
+days_in_month = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 30)
 
+# Initialize a list to store the monthly load aggregates
+monthly_load_aggregates = []
+
+# Calculate the monthly aggregates
+start_idx = 0
+for days in days_in_month:
+    # Slice the hourly load data for the current month
+    month_data = load[start_idx:start_idx + (days * 24)]
+
+    # Calculate the sum for the current month
+    monthly_sum = np.sum(month_data)
+
+    # Append the sum to the list of monthly load aggregates
+    monthly_load_aggregates.append(monthly_sum)
+
+    # Update the start index for the next month
+    start_idx += days * 24
+
+# The monthly_load_aggregates list now contains the aggregated values for each month
+monthly_load_aggregates_tuple = tuple(monthly_load_aggregates)
+print(monthly_load_aggregates_tuple)
+
+# Months labels
+months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+]
+
+# Formatter function to divide y-axis labels by 1000
+def divide_by_1000(x, pos):
+    return f'{int(x / 1000)}'
+
+# Create a bar chart
+plt.figure(figsize=(10, 6))
+plt.bar(months, monthly_load_aggregates_tuple, color='m')
+plt.xlabel("Months")
+plt.ylabel("Monthly Electricity Demand [kWh]")
+plt.title("Generated Monthly Load Profile")
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.gca().get_yaxis().set_major_formatter(FuncFormatter(divide_by_1000))
+plt.xticks(rotation=45)  # Rotate month labels for better readability
+plt.tight_layout()
+plt.show()

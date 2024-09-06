@@ -1,21 +1,28 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Nov 10 14:07:51 2023
+
+@author: Lenovo
+"""
+
 from pyDOE2 import fullfact
 import pandas as pd
 
-EXCEL_FILE_NAME = 'designs_fff.xlsx'
+EXCEL_FILE_NAME = 'designs_testing.xlsx'
 
 # Define the levels for each factor
 factor_levels = {
-    "Photovoltaic Modules (number)": [i for i in range(16, 33)],
-    "Battery Power (number)": [i for i in range(6, 25)],
-    "Solid Oxide Stack (number of cells)": [i for i in range(2, 31)],
-    "Hydrogen Storage Tanks (number of tanks)": [i for i in range(2,13)]
+    "Photovoltaic Modules (number)": [i for i in range(16, 61)],
+    "Battery Power (number)": [i for i in range(2, 15)],
+    "Solid Oxide Stack (number of cells)": [i for i in range(6, 45)],
+    "Hydrogen Storage Tanks (number of tanks)": [i for i in range(8,51)]
 }
 
 # Create a list of factors and their corresponding levels
 factors = list(factor_levels.keys())
 levels = [factor_levels[f] for f in factors]
 
-# Generate a Plackett-Burman design
+# Generate a full factorial design
 design = fullfact([3,3,3,3])-1
 
 # Convert the design matrix to a DataFrame

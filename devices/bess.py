@@ -1,6 +1,5 @@
 from .global_constants import *
 
-
 class Battery:
     def __init__(self):
         pass
@@ -18,13 +17,6 @@ class Battery:
 # qb - power rating
 # bd, bc battery charge discharge efficiency
 # ub - energy rating
-# g - SOC
-# t - czas 
+# g - SoC
+# t - time
 
-# Test
-# discharge_capacity = bess_discharge_capacity(qb, bd, ub, g, g_min, d)
-# charge_capacity = bess_charge_capacity(qb, bc, ub, g, g_max, d)
-
-# print(bess_discharge_capacity(qb, bd, ub, g, g_min, d))
-# print(charge_capacity, discharge_capacity)
-# print(bess_discharge_capacity(500.0, 0.97, 50000.0, 0.3, 0.2, 1.0))

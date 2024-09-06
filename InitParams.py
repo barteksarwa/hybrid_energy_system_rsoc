@@ -2,7 +2,7 @@ import matplotlib
 
 marker_legend_params = {'facecolor':'Navy','edgecolor':'k', 'framealpha':0.05 , 'frameon':True}
 histogram_facecolor = (0,1,0,0.25)
-# fig_width
+
 fig_width = 5.4
 fig_height = fig_width/1.618
 
