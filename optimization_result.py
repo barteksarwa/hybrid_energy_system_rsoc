@@ -6,11 +6,11 @@ import matplotlib.ticker as ticker
 from scipy.optimize import differential_evolution
 import InitParams
 
-BREAKPOINT = 90
+
 MAX_LPSR = 0
 PENALTY_COEFF = 1e6
 PENALTY_COEFF_SURPLUS = 0
-OBJECTIVE_FUN = -4 # -3 for ASC, -4 for master thesis function, -2 only deficit and loss
+# OBJECTIVE_FUN = -4 # -3 for ASC, -4 for master thesis function, -2 only deficit and loss
 
 # Path to the input file generated with opt_fun_to_excel
 results_for_all_designs = 'doe_test.csv'
@@ -54,62 +54,59 @@ def plot_pareto_chart(model, feature_labels, quadratic_combinations, output_file
     # Save the plot as a PDF
     plt.savefig(output_filename, format='pdf', bbox_inches='tight')
 
-def f_opt(X):
-    quadratic_combinations = list(itertools.combinations_with_replacement(range(len(X)), 2))
-    features = np.array(X)[np.newaxis, :]
-    feat_quad = np.array([features[:, i:i + 1] * features[:, j:j + 1] for i, j in quadratic_combinations])
+def find_result(model, model_lspr, model_surplus, bounds):
+    def f_opt(X):
+        quadratic_combinations = list(itertools.combinations_with_replacement(range(len(X)), 2))
+        features = np.array(X)[np.newaxis, :]
+        feat_quad = np.array([features[:, i:i + 1] * features[:, j:j + 1] for i, j in quadratic_combinations])
+        feat_quad = np.concatenate(feat_quad, axis=1)
+
+        features = np.concatenate((features, feat_quad), axis=1)
+        features_const = sm.add_constant(features, has_constant="add")
+
+        f = model.predict(features_const)
+
+        lpsr = model_lspr.predict(features_const)
+        max_lpsr = MAX_LPSR
+        penalty = 0
+        if lpsr > max_lpsr:
+            penalty = PENALTY_COEFF * (lpsr - max_lpsr)
+
+        surplus = model_surplus.predict(features_const)
+        surplus_penalty = PENALTY_COEFF_SURPLUS * surplus
+
+        return f + penalty + surplus_penalty
+    result = differential_evolution(f_opt, bounds)
+    return result
+
+def features_prep(results, obj_fun):
+    # Features
+    features = results.iloc[:, 0:4].values
+    quadratic_combinations = list(itertools.combinations_with_replacement(range(features.shape[1]), 2))
+    feat_quad = np.array([features[:, i:i+1] * features[:, j:j+1] for i, j in quadratic_combinations])
     feat_quad = np.concatenate(feat_quad, axis=1)
-
+    lpsr_values = results.iloc[:, results.shape[1] - 1].values
     features = np.concatenate((features, feat_quad), axis=1)
-    features_const = sm.add_constant(features, has_constant="add")
 
-    f = model.predict(features_const)
+    # Fit quadratic regression models for each target
+    models = {}
+    target_values = results.iloc[:, obj_fun].values
+    target_lspr = results.iloc[:, -2].values
+    target_surplus = results.iloc[:, -6].values
 
-    lpsr = model_lspr.predict(features_const)
-    max_lpsr = MAX_LPSR
-    penalty = 0
-    if lpsr > max_lpsr:
-        penalty = PENALTY_COEFF * (lpsr - max_lpsr)
+    # Add a constant term to the features
+    features_const = sm.add_constant(features)
+    return features_const, target_values, target_lspr, target_surplus, quadratic_combinations
 
-    surplus = model_surplus.predict(features_const)
-    surplus_penalty = PENALTY_COEFF_SURPLUS * surplus
-
-    return f + penalty + surplus_penalty
-
-# Features
-features = results[:, 0:4]
-quadratic_combinations = list(itertools.combinations_with_replacement(range(features.shape[1]), 2))
-feat_quad = np.array([features[:, i:i+1] * features[:, j:j+1] for i, j in quadratic_combinations])
-feat_quad = np.concatenate(feat_quad, axis=1)
-lpsr_values = results[:, results.shape[1] - 1]
-features = np.concatenate((features, feat_quad), axis=1)
-
-# Fit quadratic regression models for each target
-
-models = {}
-target_values = results[:,OBJECTIVE_FUN]
-target_lspr = results[:,-1]
-target_surplus = results[:, -6]
-
-# Add a constant term to the features
-features_const = sm.add_constant(features)
-
-# Fit the model
-model = sm.OLS(target_values, features_const).fit()
-model_lspr = sm.OLS(target_lspr, features_const).fit()
-model_surplus = sm.OLS(target_surplus, features_const).fit()
-
-# Display summary statistics
-print(f"Summary Statistics for Quadratic Regression Model:\n\n{model.summary()}\n\n")
-    
-# Predictions for the current target
-predictions = model.predict(features_const)
+def fit_the_model(features_const, target_values, target_lspr, target_surplus):
+    model = sm.OLS(target_values, features_const).fit()
+    model_lspr = sm.OLS(target_lspr, features_const).fit()
+    model_surplus = sm.OLS(target_surplus, features_const).fit()
+    return model, model_lspr, model_surplus
 
 
 
-bounds = [(-1,1),(-1,1),(-1,1),(-1,1)]
-result = differential_evolution(f_opt, bounds)
-print(result.x, result.fun)
+# bounds = [(-1,1),(-1,1),(-1,1),(-1,1)]
 
 def denormalize_value(normalized_value, original_min, original_max):
     return original_min + (original_max - original_min) * (normalized_value + 1) / 2
@@ -120,13 +117,13 @@ def denormalize(normalized_values, ranges):
         denormalized_values.append(denormalize_value(value, ranges[i][0], ranges[i][1]))
     return denormalized_values
 
-# Given ranges
-ranges = [(16, 48), (3, 23), (6, 30), (8, 61)]
-
-# Denormalize
-denormalized_values = denormalize(result.x, ranges)
-print(denormalized_values)
-plot_pareto_chart(model, ['PV', 'BESS', 'rSOC', 'HSS'], quadratic_combinations)
+# # Given ranges
+# ranges = [(16, 48), (3, 23), (6, 30), (8, 61)]
+#
+# # Denormalize
+# denormalized_values = denormalize(result.x, ranges)
+# print(denormalized_values)
+# plot_pareto_chart(model, ['PV', 'BESS', 'rSOC', 'HSS'], quadratic_combinations)
 
 
 
@@ -134,6 +131,9 @@ plot_pareto_chart(model, ['PV', 'BESS', 'rSOC', 'HSS'], quadratic_combinations)
 ## Check the linear regression
 # import seaborn as sns
 
+
+# Predictions for the current target
+# predictions = model.predict(features_const)
 
 # # Scatter regression plot
 # sns.regplot(x=predictions, y=results[:,-1], scatter_kws={'s': 30}, line_kws={'color': 'red'})
